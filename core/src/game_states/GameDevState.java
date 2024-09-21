@@ -142,7 +142,7 @@ public class GameDevState extends State {
 		public void create () {
 			//Box2D initializing
 			Box2D.init();
-//			polygonGen.trcImg("game-imgs/grnd3.png", "output.xml");
+//			polygonGen.trcImg("game-imgs/grnd3.png", "output.xml"); "-Djava.library.path=C:/Users/nisch/eclipse-workspace/Penguin Wars/libs/native"
 			//Textures
 			texInit();
 			//The World
