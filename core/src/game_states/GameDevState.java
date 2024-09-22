@@ -34,10 +34,13 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -100,7 +103,8 @@ public class GameDevState extends State {
 		Label gametimesec;
 		Label gametimemin;
 		Label colon;
-		Label result;
+		LabelStyle lsty;
+		LabelStyle lsty2;
 		BitmapFont font30;
 		//Prim fields
 		int l = 0;
@@ -117,6 +121,8 @@ public class GameDevState extends State {
 		private int num = 0;
 		private boolean ended = false;
 		private int winner = 1;
+		Color[] plclr = {Color.RED,Color.BLUE,Color.YELLOW,Color.PINK,Color.GREEN};
+		String[] plnames = {"Red","Blue","Yellow","Pink","Green"};
 		private ShapeRenderer shapeRenderer;
 		//Constructors
 		protected GameDevState(GameStateManager gsm){
@@ -126,7 +132,7 @@ public class GameDevState extends State {
 			camera = new OrthographicCamera();
 			camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 			atlas = new TextureAtlas("game-imgs-packed//pack.atlas"); //Sprite sprite = atlas.createSprite("otherimagename");
-			num = 2;
+			num = 3;
 			create();
 		}
 		public GameDevState(StartState startState) {
@@ -136,6 +142,7 @@ public class GameDevState extends State {
 			camera = startState.camera;
 			atlas = startState.atlas;
 			num = startState.num;
+			game_timer = 60*startState.game_time;
 			create();
 		}
 		@Override
@@ -172,15 +179,13 @@ public class GameDevState extends State {
 		@Override
 		public void render () {
 			ScreenUtils.clear(0, 0.5f, 0.5f, 1);//default background
-			if(ended) {
-				s2drender(Gdx.graphics.getDeltaTime());
-			}
 			cameraUpdate();//centering camera on player
 			batch.setProjectionMatrix(camera.combined.scl(Constants.PPM));	//batch proj matrix
 			float delta = Gdx.graphics.getDeltaTime();
 			debugRenderer.render(world, camera.combined);//rendering using box2D debug renderer
 			batchRender();//rendering sprites using sprite batch
 			s2drender(delta);
+			if(ended) return;
 			worldUpdate(delta);//world update
 		}
 		@Override
@@ -258,7 +263,7 @@ public class GameDevState extends State {
 			table.setDebug(false);
 			table.top().padTop(20).left();
 			
-			LabelStyle lsty = new LabelStyle();
+			lsty = new LabelStyle();
 			lsty.font = font30;
 			lsty.fontColor = Color.YELLOW;
 			
@@ -277,13 +282,13 @@ public class GameDevState extends State {
 			turntime = new Label("",lsty);
 			table.add(turntime);
 			
-			table.add(new Label("Player ",lsty)).padLeft(100);
-			playernum = new Label("1",lsty);
-			table.add(playernum);
+			lsty2 = new LabelStyle(lsty);
+			lsty2.fontColor = Color.RED;
+			playernum = new Label("Red",lsty2);
+			table.add(playernum).padLeft(100);
 			
-			table.row();
-			result = new Label("",lsty);
-			table.add(result);
+			table.add(new Label("'s Turn",lsty2));
+			
 		}
 		//Inside render method
 		private void cameraUpdate() {
@@ -318,7 +323,8 @@ public class GameDevState extends State {
 	 		gametimesec.setText(real_game_timer[1]);
 	 		colon.setText(real_game_timer[1]/10==0?":0":":");
 	 		
-	 		playernum.setText(1+players.indexOf(player, true));
+	 		playernum.setText(plnames[players.indexOf(player, true)]);
+	 		lsty2.fontColor = plclr[players.indexOf(player, true)];
 	 		
 	 		stage.act(delta);
 	 		stage.draw();
@@ -365,8 +371,15 @@ public class GameDevState extends State {
 	 					winner = i+1;
 	 				}
 	 			}
-	 			result.setText("Winner is Player "+winner);
-	 			table.getCell(result).pad(300);
+	 			for(Actor a:table.getChildren()) {
+	 				a.setVisible(false);
+	 			}
+	 			table.row();
+	 			table.add(new Label("Winner is ",lsty)).padLeft(550).padTop(400);
+	 			LabelStyle lsty2 = new LabelStyle(lsty);
+	 			lsty2.fontColor = plclr[winner-1];
+	 			Label result = new Label(plnames[winner-1],lsty2);
+	 			table.add(result).bottom();
 	 		}
 	 		turntimer+=delta;
 	 	}

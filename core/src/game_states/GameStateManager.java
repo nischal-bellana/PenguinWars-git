@@ -4,7 +4,7 @@ public class GameStateManager {
 	public State st;
 	public State next_st;
 	public GameStateManager() {
-		boolean x = false;
+		boolean x = true;
 		if(x) {
 			st = new StartState(this);
 		}

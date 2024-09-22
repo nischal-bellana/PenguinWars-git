@@ -49,13 +49,16 @@ public class StartState extends State {
 	Table table;
 	Label label1;
 	Label label2;
+	Label label3;
 	Slider sl;
+	Slider sl2;
 	//fonts
 	BitmapFont font30;
 	//primitives
 	boolean animfinished = false;
 	float state_time=0;
 	public int num = 2;
+	public int game_time = 1;
 	StartState(GameStateManager gsm){
 		this.gsm = gsm;
 		create();
@@ -173,8 +176,18 @@ public class StartState extends State {
 		table.add(sl).width(300);
 		
 		label2 = new Label("2",lsty);
+		table.add(label2).padLeft(20);
+		
 		table.row();
-		table.add(label2);
+		table.add(new Label("Game Time",lsty));
+		
+		table.row();
+		sl2 = new Slider(1,30,1,false,slsty);
+		table.add(sl2).width(300);
+		
+		label3 = new Label("1",lsty);
+		table.add(label3).padLeft(20);
+		table.add(new Label(" mins",lsty));
 		
 		table.setVisible(false);
 	}
@@ -182,6 +195,9 @@ public class StartState extends State {
 	private void s2dUpd(){
 		num = (int)sl.getValue();
 		label2.setText(num);
+		
+		game_time = (int)sl2.getValue();
+		label3.setText(game_time);
 	}
 	private void changest() {
 		gsm.next_st = new GameDevState(this);

@@ -19,7 +19,10 @@ allprojects {
     apply plugin: "eclipse"
 
     version = '1.0'
+    
     ext {
+    	javaVersion = System.getProperty("java.version")
+		majorJavaVersion = javaVersion.startsWith("1.") ? javaVersion.substring(2, 3) : javaVersion.substring(0, javaVersion.indexOf("."))
         appName = "penguin wars"
         gdxVersion = '1.12.1'
         roboVMVersion = '2.3.20'
@@ -28,7 +31,7 @@ allprojects {
         aiVersion = '1.8.2'
         gdxControllersVersion = '2.2.1'
     }
-
+    
     repositories {
         mavenLocal()
         mavenCentral()
