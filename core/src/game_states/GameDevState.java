@@ -1,11 +1,13 @@
 package game_states;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -118,7 +120,7 @@ public class GameDevState extends State {
 		float turntimer = 0;
 		private float accumulator = 0;
 		private float[] spwpos = {-10.8125f,13.0f,12.25f,13.5f,-5.53125f,5.03125f,11.03125f,3.5f,-0.46875f,5.78125f};
-		private int num = 0;
+		private int num = 2;
 		private boolean ended = false;
 		private int winner = 1;
 		Color[] plclr = {Color.RED,Color.BLUE,Color.YELLOW,Color.PINK,Color.GREEN};
@@ -132,7 +134,6 @@ public class GameDevState extends State {
 			camera = new OrthographicCamera();
 			camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 			atlas = new TextureAtlas("game-imgs-packed//pack.atlas"); //Sprite sprite = atlas.createSprite("otherimagename");
-			num = 3;
 			create();
 		}
 		public GameDevState(StartState startState) {

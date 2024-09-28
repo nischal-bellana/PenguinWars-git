@@ -17,7 +17,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
+import com.penguin_wars.game.Constants;
 
 public class XMLHelper {
 	public static void xmlWrite(Array<PNadv> polys,String path) throws Exception {
@@ -53,7 +56,9 @@ public class XMLHelper {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		
-		File fxml = new File(path);
+		FileHandle fileHandle = Gdx.files.absolute(Constants.workdir+path);
+		File fxml = fileHandle.file();
+		
 		Document doc = builder.parse(fxml);
 		List<float[]> polys = new ArrayList<>();
 		NodeList polylist = doc.getElementsByTagName("polygon");
