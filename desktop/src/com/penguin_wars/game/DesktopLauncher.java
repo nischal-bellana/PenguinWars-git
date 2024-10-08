@@ -20,7 +20,7 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setTitle("penguin wars");
-		config.setWindowedMode(1200, 900);
+		config.setWindowedMode(1200, 1000);
 		config.useVsync(true);
 		new Lwjgl3Application(new penguin_wars(), config);
 	}

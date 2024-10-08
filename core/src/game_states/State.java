@@ -1,17 +1,26 @@
 package game_states;
 
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+
 public class State {
 	//fields
 	protected GameStateManager gsm;
-	public void create() {
+	protected Viewport vp;
+	
+	protected void create() {
 		
 	}
 	
-	public void render() {
+	protected void render() {
 		
 	}
 	
-	public void dispose() {
+	protected void dispose() {
+		
+	}
+	
+	protected void resize(int width,int height) {
 		
 	}
 }

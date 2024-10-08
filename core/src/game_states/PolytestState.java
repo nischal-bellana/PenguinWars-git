@@ -290,7 +290,7 @@ public class PolytestState extends State{
 					if(f>0) {
 						Vector2 pos = new Vector2();
 						pos.set(600,450);
-						PNadv head = Clipping.genCir(pos, f);
+						PNadv head = Clipping.genCir(new Vector2(),pos, f);
 						if(polys.size>0) {
 						PNadv last = polys.get(polys.size-1);
 						last.nextPoly = head;

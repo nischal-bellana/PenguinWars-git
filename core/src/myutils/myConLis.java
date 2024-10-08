@@ -25,15 +25,19 @@ public class myConLis implements ContactListener{
 		Fixture fixb = contact.getFixtureB();
 		Abody abodya = (Abody)fixa.getUserData();
 		Abody abodyb = (Abody)fixb.getUserData();
+		
 		if(abodya!=null && abodya instanceof Bomb) {
 			Bomb b = (Bomb)abodya;
 			b.des = true;
 		}
+		
 		if(abodyb!=null && abodyb instanceof Bomb) {
 			Bomb b = (Bomb)abodyb;
 			b.des = true;
 		}
+		
 		if(abodya==null||abodyb==null) return;
+		
 		if((abodya instanceof Player && fixa.isSensor())||(abodyb instanceof Player && fixb.isSensor())) {
 			if((abodya instanceof cookie||abodyb instanceof cookie)) {
 				if(abodya instanceof Player) {

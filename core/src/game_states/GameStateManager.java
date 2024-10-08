@@ -6,15 +6,16 @@ public class GameStateManager {
 	public GameStateManager() {
 		boolean x = true;
 		if(x) {
-			st = new StartState(this);
+			st = new StartState();
 		}
 		else {
-			st = new GameDevState(this);
+			st = new GameDevState();
 		}
 		st.gsm = this;
 	}
 	public GameStateManager(State st) {
 		this.st = st;
+		st.gsm = this;
 	}
 	
 	public void render() {
@@ -30,5 +31,9 @@ public class GameStateManager {
 	public void dispose() {
 		st.dispose();
 		if(next_st!=null) next_st.dispose();
+	}
+	
+	public void resize(int width,int height) {
+		st.resize(width, height);
 	}
 }

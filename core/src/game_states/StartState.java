@@ -32,11 +32,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class StartState extends State {
-	//batch, camera
+	
+	//Batch, Camera
 	SpriteBatch batch;
 	OrthographicCamera camera;
+	
 	//Texture Regions
 	TextureAtlas atlas;
 	Animation<TextureRegion> anim;
@@ -47,6 +51,7 @@ public class StartState extends State {
 	AtlasRegion yellow;
 	AtlasRegion buttondown;
 	AtlasRegion buttonup;
+	
 	//scene2d
 	Stage stage;
 	Table table;
@@ -55,27 +60,36 @@ public class StartState extends State {
 	Label label3;
 	Slider sl;
 	Slider sl2;
+	
 	//fonts
 	BitmapFont font30;
+	
 	//primitives
 	boolean animfinished = false;
 	float state_time=0;
 	public int num = 2;
 	public int game_time = 1;
-	StartState(GameStateManager gsm){
-		this.gsm = gsm;
+	
+	StartState(){
 		create();
 	}
+	
 	@Override
 	public void create() {
 		// TODO Auto-generated method stub
 		//SpriteBatch and camera
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.setToOrtho(false,1200, 900);
+		
+		//Viewport
+		vp = new FitViewport(1200, 900,camera);
+		vp.update(1400,980);
+		
 		//Texture Atlas
 		atlas = new TextureAtlas("game-imgs-packed//pack.atlas"); //Sprite sprite = atlas.createSprite("otherimagename");
 		texInit();
+		
 		//fonts
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/rebellion-squad-font/RebellionSquad-ZpprZ.ttf"));
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -84,22 +98,25 @@ public class StartState extends State {
 		generator.dispose(); // don't forget to dispose to avoid memory leaks!
 
 		//Stage and widgets
-		stage = new Stage();
-		Gdx.input.setInputProcessor(stage);
-		
-		//adding elements
-		adds2delems();
+		stageInit();
 		
 	    anim = new Animation<TextureRegion>(0.0833f, atlas.findRegions("anim/missile"), PlayMode.NORMAL);
 	}
 
 	@Override
+	protected void resize(int width,int height) {
+		// TODO Auto-generated method stub
+		vp.update(width, height,true);
+	}
+
+	@Override
 	public void render() {
 		// TODO Auto-generated method stub
-		ScreenUtils.clear(1, 0.5f, 0.5f, 1);//default background
+		ScreenUtils.clear(0, 0, 0, 1);//default background
 		
-		state_time +=Gdx.graphics.getDeltaTime();
+		float delta = Gdx.graphics.getDeltaTime();
 		
+		state_time += delta;
 		TextureRegion frame = anim.getKeyFrame(state_time, false);
 		if(!animfinished && anim.isAnimationFinished(state_time) ) {
 			animfinished = true;
@@ -107,15 +124,10 @@ public class StartState extends State {
 		}
 		
 		camera.update();
-		
 		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		batch.draw(frame,0,0);
-		batch.end();
+		batchRen(frame);
 		
-		stage.act(Gdx.graphics.getDeltaTime());
-		stage.draw();
-		s2dUpd();
+		stageUpd(delta);
 	}
 
 	@Override
@@ -127,6 +139,7 @@ public class StartState extends State {
 		batch.dispose();
 		atlas.dispose();
 	}
+	
 	private void texInit() {
 		playup = atlas.findRegion("playup");
 		playdown = atlas.findRegion("playdown");
@@ -136,7 +149,13 @@ public class StartState extends State {
 		green = atlas.findRegion("green");
 		yellow = atlas.findRegion("yellow");
 	}
-	public void adds2delems() {
+	
+	public void stageInit() {
+		//Stage
+		stage = new Stage();
+		stage.setViewport(vp);
+		Gdx.input.setInputProcessor(stage);
+		
 		//root Table
 		table = new Table();
 		stage.addActor(table);
@@ -145,12 +164,12 @@ public class StartState extends State {
 		//Button
 		TextButtonStyle style = new TextButtonStyle();
 		style.up = new TextureRegionDrawable(playup);
-		style.down = new TextureRegionDrawable(playdown);
+		style.over = style.down = new TextureRegionDrawable(playdown);
 		style.font = font30;
 		style.fontColor = Color.GRAY;
 		
 		TextButton button = new TextButton("PLAY", style);
-		table.add(button);
+		table.add(button).padLeft(100);
 		button.addListener(new ClickListener() {
 
 			@Override
@@ -165,7 +184,7 @@ public class StartState extends State {
 		
 		label1 = new Label("No of Players",lsty);
 		table.row();
-		table.add(label1).padTop(200);
+		table.add(label1).padTop(100);
 		
 		SliderStyle slsty = new SliderStyle();
 		slsty.background = new TextureRegionDrawable(buttonup);
@@ -195,13 +214,23 @@ public class StartState extends State {
 		table.setVisible(false);
 	}
 	
-	private void s2dUpd(){
+	private void stageUpd(float delta){
 		num = (int)sl.getValue();
 		label2.setText(num);
 		
 		game_time = (int)sl2.getValue();
 		label3.setText(game_time);
+		
+		stage.act(delta);
+		stage.draw();
 	}
+	
+	private void batchRen(TextureRegion frame) {
+		batch.begin();
+		batch.draw(frame,0,0);
+		batch.end();
+	}
+	
 	private void changest() {
 		gsm.next_st = new GameDevState(this);
 	}

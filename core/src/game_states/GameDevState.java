@@ -23,6 +23,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.HdpiUtils;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.input.GestureDetector;
@@ -46,6 +47,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.penguin_wars.game.Abody;
 import com.penguin_wars.game.Bomb;
 import com.penguin_wars.game.Constants;
@@ -68,12 +70,18 @@ public class GameDevState extends State {
 		OrthographicCamera camera;
 		World world;
 		Box2DDebugRenderer debugRenderer;
+		
+		//Viewports
+		FitViewport topvp;
+		FitViewport bottomvp;
+		
 		//Abodies
 		public Player player;
 		Abody grnd;
 		Array<Bomb> bombs;
 		Array<clipCL> clips;
 		Array<Player> players;
+		
 		//Texture Regions (atlas)
 		AtlasRegion grndrg;
 		AtlasRegion strt;
@@ -92,11 +100,13 @@ public class GameDevState extends State {
 		AtlasRegion blackcross;
 		AtlasRegion back;
 		TextureAtlas atlas;
+		
 		//Sprites
 		Sprite grndsp;
 		Sprite powsp;
 		Sprite watersp;
 		Array<Sprite> clipsp;
+		
 		//Scene2d
 		Stage stage;
 		Table table;
@@ -108,6 +118,7 @@ public class GameDevState extends State {
 		LabelStyle lsty;
 		LabelStyle lsty2;
 		BitmapFont font30;
+		
 		//Prim fields
 		int l = 0;
 		int r = 0;
@@ -123,72 +134,90 @@ public class GameDevState extends State {
 		private int num = 2;
 		private boolean ended = false;
 		private int winner = 1;
+		private final float[] center = {600/32f,450/32f};
 		Color[] plclr = {Color.RED,Color.BLUE,Color.YELLOW,Color.PINK,Color.GREEN};
 		String[] plnames = {"Red","Blue","Yellow","Pink","Green"};
 		private ShapeRenderer shapeRenderer;
+		
 		//Constructors
-		protected GameDevState(GameStateManager gsm){
+		protected GameDevState(){
 			//Sprite Batch and Camera
-			this.gsm = gsm;
 			batch = new SpriteBatch();
 			camera = new OrthographicCamera();
-			camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			camera.setToOrtho(false, 1200, 900);
+			vp = new FitViewport(1200,1000);
 			atlas = new TextureAtlas("game-imgs-packed//pack.atlas"); //Sprite sprite = atlas.createSprite("otherimagename");
 			create();
 		}
+		
 		public GameDevState(StartState startState) {
 			// TODO Auto-generated constructor stub
 			gsm = startState.gsm;
 			batch = startState.batch;
 			camera = startState.camera;
+			vp = startState.vp;
+			vp.setWorldSize(1200, 1000);
 			atlas = startState.atlas;
 			num = startState.num;
 			game_timer = 60*startState.game_time;
 			create();
 		}
+		
 		@Override
 		public void create () {
 			//Box2D initializing
 			Box2D.init();
 //			polygonGen.trcImg("game-imgs/grnd3.png", "output.xml"); "-Djava.library.path=C:/Users/nisch/eclipse-workspace/Penguin Wars/libs/native"
+			
+			//Viewports
+			vp.setCamera(new OrthographicCamera());
+			
+			topvp = new FitViewport(1200,900,camera);
+			bottomvp = new FitViewport(1200,100);
+			
+			resize(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+			
 			//Textures
 			texInit();
+			
 			//The World
 			world = new World(new Vector2(0,-9.8f),true); 
+			
 			//Abodies
 			createPlatform();
 			abodsInit();
+			
 			//Sprites
 			sprInit();
+			
 			//Scene 2d
 			fontInit();
-			s2dInit();
+			stageInit();
+			
 			//ContactListener
 			world.setContactListener(new myConLis());
 			myConLis.world = world;
+			
 			//Debug Renderer
 			debugRenderer = new Box2DDebugRenderer();
 			
 		    shapeRenderer = new ShapeRenderer();
 		    shapeRenderer.setAutoShapeType(true);
-		    
-		    Vector3 pos = camera.position;
-		    pos.x = 0;
-		    pos.y = 0;
-		    camera.update();
 		}
+		
 		@Override
 		public void render () {
-			ScreenUtils.clear(0, 0.5f, 0.5f, 1);//default background
-			cameraUpdate();//centering camera on player
+			ScreenUtils.clear(0.3f, 0.3f, 0.3f, 1);//default background
+			camera.update();//camer upd
 			batch.setProjectionMatrix(camera.combined.scl(Constants.PPM));	//batch proj matrix
 			float delta = Gdx.graphics.getDeltaTime();
-			debugRenderer.render(world, camera.combined);//rendering using box2D debug renderer
+//			debugRenderer.render(world, camera.combined);//rendering using box2D debug renderer
 			batchRender();//rendering sprites using sprite batch
-			s2drender(delta);
+			stageRender(delta);
 			if(ended) return;
 			worldUpdate(delta);//world update
 		}
+		
 		@Override
 		public void dispose () {
 			batch.dispose();
@@ -197,6 +226,21 @@ public class GameDevState extends State {
 			shapeRenderer.dispose();
 			stage.dispose();
 		}
+		
+		@Override
+		protected void resize(int width, int height) {
+			// TODO Auto-generated method stub
+			
+			vp.update(width, height,true);
+			int w = vp.getScreenWidth(),h=vp.getScreenHeight();
+			
+			topvp.update(w, h,false);
+			bottomvp.update(w, h,true);
+			
+			bottomvp.setScreenPosition(vp.getScreenX(),vp.getScreenY());
+			topvp.setScreenPosition(vp.getScreenX(), vp.getScreenY()+bottomvp.getScreenHeight());
+		}
+
 		//Inititializing methods here
 		private void texInit() {
 			hbs = new AtlasRegion[5];
@@ -226,6 +270,7 @@ public class GameDevState extends State {
 			bombtex = atlas.findRegion("bomb");
 			blackcross = atlas.findRegion("blackcross");
 		}
+		
 		private void abodsInit() {
 			grnd = createGrnd();
 			bombs = new Array<Bomb>();
@@ -234,10 +279,11 @@ public class GameDevState extends State {
 			for(int i=0;i<num;i++) createPlayer();
 			player = players.first();
 		}
+	
 		private void sprInit() {
 			grndsp = new Sprite(grndrg);
 			grndsp.setSize(1200/32f,900/32f);
-			grndsp.setCenter(grnd.texcen[0], grnd.texcen[1]);
+			grndsp.setCenter((600/32f)+grnd.texcen[0],(450/32f)+grnd.texcen[1]);
 			
 			powsp = new Sprite(pow[0]);
 			powsp.setSize(2*1.024f,2*1.024f);
@@ -248,6 +294,7 @@ public class GameDevState extends State {
 			watersp.setAlpha(0.3f);
 			clipsp = new Array<Sprite>();
 		}
+	
 		private void fontInit() {
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/rebellion-squad-font/RebellionSquad-ZpprZ.ttf"));
 			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -255,8 +302,11 @@ public class GameDevState extends State {
 			font30 = generator.generateFont(parameter); // font size 30 pixels
 			generator.dispose(); // don't forget to dispose to avoid memory leaks!
 		}
-		private void s2dInit() {
+	
+		private void stageInit() {
 			stage = new Stage();
+			Gdx.input.setInputProcessor(stage);
+			stage.setViewport(topvp);
 			
 			table = new Table();
 			stage.addActor(table);
@@ -291,16 +341,13 @@ public class GameDevState extends State {
 			table.add(new Label("'s Turn",lsty2));
 			
 		}
+	
 		//Inside render method
-		private void cameraUpdate() {
-//			Vector3 pos = camera.position;
-//			pos.x = player.getPosition().x*Constants.PPM;
-//			pos.y = player.getPosition().y*Constants.PPM;
-			camera.update();
-		}
-	 	private void batchRender() {
+	 
+		private void batchRender() {
+			topvp.apply(true);
 	 		batch.begin();
-	 		batch.draw(back,-600/32f ,-450/32f, 1200/32f,900/32f);
+	 		batch.draw(back,0 ,0 , 1200/32f,900/32f);
 	 		batch.end();
 	 		drawgrnd();
 	 		batch.begin();
@@ -318,7 +365,9 @@ public class GameDevState extends State {
 			watersp.draw(batch);
 			batch.end();
 	 	}
-	 	private void s2drender(float delta) {
+	 
+		private void stageRender(float delta) {
+			topvp.apply(true);
 	 		turntime.setText(20-(int)turntimer);
 	 		gametimemin.setText(real_game_timer[0]);
 	 		gametimesec.setText(real_game_timer[1]);
@@ -330,25 +379,36 @@ public class GameDevState extends State {
 	 		stage.act(delta);
 	 		stage.draw();
 	 	}
-	 	private void worldUpdate(float deltaTime) {
+	 
+		private void worldUpdate(float deltaTime) {
 	 		timerUpd(deltaTime);
+	 		
 	 		if(ended) return;
+	 		
 	 		player.playersp.setRegion(strt);
+	 		
 			inputUpdate();
+			
 			if(!player.incon)
 				jumpUpdate();
+			
 			bombupd();
+			
 			if(clips.size!=0)
 				clipsupdate();
+			
 			cookie ck = (cookie)grnd;
 			if(ck.polysfinal.size!=0||ck.destroyqueue.size!=0||ck.createqueue.size!=0) {
 				clipeff();
 			}
+			
 			doPhysicsStep(deltaTime);
+			
 			plUpdate();
 		}
-	 	// Other methods
-	 	private void timerUpd(float delta) {
+	 	
+		// Other methods
+		private void timerUpd(float delta) {
 	 		if(turntimer>20) {
 	 			turntimer=0;
 	 			bshow = false;
@@ -384,6 +444,7 @@ public class GameDevState extends State {
 	 		}
 	 		turntimer+=delta;
 	 	}
+	
 		private void clipsupdate() {
 			for(int i=0;i<clips.size;i++) {
 				clipCL cl = clips.get(i);
@@ -403,6 +464,7 @@ public class GameDevState extends State {
 				}
 			}
 		}
+	
 		private void plUpdate() {
 			for(int i=0;i<players.size;i++) {
 				Player pl = players.get(i);
@@ -429,25 +491,33 @@ public class GameDevState extends State {
 						}
 					}
 				}
-				if(Math.abs(pl.getPosition().x) >21) {
+				
+				if(Math.abs(pl.getPosition().x-center[0]) >center[0]) {
 					pl.setLinearVelocity(pl.getPosition().x<0?2:-2, 0);
 				}
-				if(pl.getPosition().y<-10) {
+				
+				float waterlevel = 5;
+				if(pl.getPosition().y<waterlevel) {
 					if(pl.health>3/60f) pl.health -= 3/60f;
 					else pl.health = 0;
-					pl.body.applyForceToCenter(0,Math.min(0.65f,(-10-pl.getPosition().y)*0.25f)*9.8f, true);
-					if(pl.body.getLinearDamping()<1) pl.body.setLinearDamping(1);
 					pl.updateHb();
+					
+					pl.body.applyForceToCenter(0,Math.min(0.65f,(waterlevel-pl.getPosition().y)*0.25f)*9.8f, true);
+					if(pl.body.getLinearDamping()<1) pl.body.setLinearDamping(1);
 				}
 				else {
 					if(pl.body.getLinearDamping()==1) pl.body.setLinearDamping(0.3f);
 				}
+				
 				pl.sprUpd();
 			}
 			if(bshow) {
-				Vector2 vec = new Vector2(Gdx.input.getX()-(Gdx.graphics.getWidth()/2),(Gdx.graphics.getHeight()/2)-Gdx.input.getY());
-				vec.sub(player.getPosition().x*Constants.PPM,player.getPosition().y*Constants.PPM);
-				vec.scl(1/32f);
+				Vector2 vec = new Vector2(Gdx.input.getX(),(Gdx.graphics.getHeight())-Gdx.input.getY());
+				Vector2 vec2 = new Vector2();
+				vec2.set(player.getPosition());
+				vec2.scl(Constants.PPM);
+				topvp.project(vec2);
+				vec.sub(vec2);
 				vec.scl(1.5f/vec.len());
 				float an = vec.angleDeg();
 				vec.add(player.getPosition());
@@ -456,6 +526,7 @@ public class GameDevState extends State {
 				powsp.setRotation(an);
 			}
 		}
+	
 		public void jumpUpdate() {
 			if(isr) {
 				player.playersp.setRegion(rghty[r/6]);
@@ -468,6 +539,7 @@ public class GameDevState extends State {
 				l%=18;
 			}
 		}
+	
 		private void inputUpdate() {
 //			if(Gdx.input.justTouched()) {
 //				int x = Gdx.input.getX();
@@ -521,12 +593,14 @@ public class GameDevState extends State {
 
 		private void clipeff() {
 			cookie ck = (cookie)grnd;
+			
 			for(int i=0;i<ck.destroyqueue.size;i++) {
 				if(ck.destroy(ck.destroyqueue.get(i))) {
 					ck.destroyqueue.removeIndex(i);
 					i--;
 				}
 			}
+			
 			Array<float[]> polysfinal = ck.polysfinal;
 			Array<PNadv> polys = new Array<PNadv>();
 			for(int i=0;i<ck.createqueue.size;i++) {
@@ -538,12 +612,15 @@ public class GameDevState extends State {
 				}
 			}
 			if(ck.createqueue.size!=0) ck.createqueue.removeRange(0, ck.createqueue.size-1);
+			
 			for(int i=0;i<polys.size;i++) {
 				PNadv poly = polys.get(i);
 				polysfinal.add(cookie.PNtoarr(poly));
 			}
+			
 			ck.createfixtures();
 		}
+	
 		private void bombupd() {
 			for(int i=0;i<bombs.size;i++) {
 				Bomb b = bombs.get(i);
@@ -571,13 +648,14 @@ public class GameDevState extends State {
 				}
 			}
 		}
+	
 		private Player createPlayer() {
 			if(players.size==5) {
 				return player;
 			}
 			BodyDef def = new BodyDef();
 			def.type = BodyType.DynamicBody;
-			def.position.set(spwpos[2*players.size],spwpos[2*players.size+1]);
+			def.position.set(center[0]+spwpos[2*players.size],center[1]+spwpos[2*players.size+1]);
 			def.fixedRotation = true;
 			FixtureDef fdef = createFixdef(0.5f,1.3f,0.2f);
 			Player pl = new Player(world,def, fdef,strt,hbs[players.size]);
@@ -604,11 +682,12 @@ public class GameDevState extends State {
 			bomb.pl = player;
 			bombs.add(bomb);
 		}
+	
 		private void createPlatform() {
 			BodyDef bdef = new BodyDef();
 			bdef.type = BodyType.StaticBody;
 			bdef.fixedRotation = true;
-			bdef.position.set(0,-20);
+			bdef.position.set(center[0],-2);
 			FixtureDef fdef = createFixdef(1f,0f,0.1f);
 			PolygonShape shp = new PolygonShape();
 			shp.setAsBox(100, 2);
@@ -616,16 +695,18 @@ public class GameDevState extends State {
 			world.createBody(bdef).createFixture(fdef);
 			shp.dispose();
 		}
+	
 		private Abody createGrnd() {
 			BodyDef bdef = new BodyDef();
 			bdef.type = BodyType.StaticBody;
-			bdef.position.x = 0;
-			bdef.position.y = 0;
+			bdef.position.x = 600/32f;
+			bdef.position.y = 450/32f;
 			FixtureDef fdef = createFixdef(1,1.3f,0.3f);
 			cookie ck =  new cookie(world,"output2.xml",bdef,fdef,1/32f,1200,900);
 			ck.id = "grnd";
 			return ck;
 		}
+	
 		private FixtureDef createFixdef(float den,float fric,float rest) {
 			FixtureDef fdef = new FixtureDef();
 			fdef.density = den;
@@ -633,7 +714,7 @@ public class GameDevState extends State {
 			fdef.restitution = rest;
 			return fdef;
 		}
-
+	
 		private void drawgrnd() {
 			Gdx.gl.glEnable(GL20.GL_DEPTH_TEST); 
 			createMask();
@@ -644,14 +725,15 @@ public class GameDevState extends State {
 		    Gdx.gl.glDepthFunc(GL20.GL_EQUAL);
 
 		    /* Render masked elements. */
+		    batch.setProjectionMatrix(camera.combined);
 		    batch.begin();
 		    grndsp.draw(batch);
 		    batch.end();
 		    
 		    /* Disable depth writing. */
 		    Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-		    
 		}
+	
 		private float[] pstovert(PolygonShape shp) {
 			int len = shp.getVertexCount();
 			float[] vert = new float[2*len];
@@ -676,7 +758,7 @@ public class GameDevState extends State {
 		    /* Disable RGBA color writing. */
 		    Gdx.gl.glColorMask(false, false, false,false);
 		    /* Render mask elements. */
-		    shapeRenderer.setProjectionMatrix(camera.combined);
+		    shapeRenderer.setProjectionMatrix(camera.combined.scl(32));
 		    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
 		    // Draw the mask (e.g., a circular mask or polygon mask)
@@ -685,13 +767,14 @@ public class GameDevState extends State {
 		        float[] vert = pstovert(shp);
 		        int i = 4;
 		        while (i < vert.length) {
-		            shapeRenderer.triangle(vert[0], vert[1], vert[i-2], vert[i-1], vert[i], vert[i+1]);
+		            shapeRenderer.triangle(vert[0]+(600/32f), vert[1]+(450/32f), vert[i-2]+(600/32f), vert[i-1]+(450/32f), vert[i]+(600/32f), vert[i+1]+(450/32f));
 		            i += 2;
 		        }
 		    }
 		    
 		    shapeRenderer.end();
 		}
+	
 		private void doPhysicsStep(float deltaTime) {
 		    // fixed time step
 		    // max frame time to avoid spiral of death (on slow devices)
@@ -702,4 +785,6 @@ public class GameDevState extends State {
 		        accumulator -= 1/60f;
 		    }
 		}
+
+		
 }

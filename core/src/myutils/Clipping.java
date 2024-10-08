@@ -39,8 +39,8 @@ public class Clipping {
 	public static void clip(Fixture a, Vector2 pos1,Vector2 pos2) {
 		cookie ck = (cookie)a.getUserData();
 		PolygonShape shp =  (PolygonShape)a.getShape();
-		PNadv subPN = shptoPN(shp,pos1);
-		PNadv clipPN = genCir(pos2,2);
+		PNadv subPN = shptoPN(shp);
+		PNadv clipPN = genCir(pos1,pos2,2);
 		int intersectcount = phase1(subPN,clipPN);
 		if(intersectcount%2==1) return;
 		if(intersectcount==0) {
@@ -64,7 +64,7 @@ public class Clipping {
 		}
 		ck.createqueue.add(res);
 	}
-	public static PNadv genCir(Vector2 pos,double r) {
+	public static PNadv genCir(Vector2 pos1,Vector2 pos2,double r) {
 		Vector2 p = new Vector2();
 		p.set((float)r,0);
 		PNadv head = new PNadv();
@@ -73,7 +73,7 @@ public class Clipping {
 		head.ishead = true;
 		PNadv cur = head;
 		for(int i=0;i<30;i++) {
-			cur.set(pos.x+p.x,pos.y+p.y);
+			cur.set(pos2.x+p.x-pos1.x,pos2.y+p.y-pos1.y);
 			cur.next = new PNadv();
 			cur.next.prev = cur;
 			cur = (PNadv)cur.next;
@@ -84,7 +84,7 @@ public class Clipping {
 		head.prev = cur;
 		return head;
 	}
-	public static PNadv shptoPN(PolygonShape shp,Vector2 pos) {
+	public static PNadv shptoPN(PolygonShape shp) {
 		PNadv head = new PNadv();
 		head.ishead = true;
 		head.vert_count = shp.getVertexCount();
@@ -92,7 +92,7 @@ public class Clipping {
 		Vector2 vec = new Vector2();
 		for(int i=0;i<head.vert_count;i++) {
 			shp.getVertex(i, vec);
-			cur.set(pos.x + vec.x,pos.y + vec.y);
+			cur.set(vec.x,vec.y);
 			cur.next = new PNadv();
 			cur.next.prev = cur;
 			cur = (PNadv)cur.next;

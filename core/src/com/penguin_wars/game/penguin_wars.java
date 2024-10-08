@@ -24,5 +24,10 @@ public class penguin_wars extends ApplicationAdapter {
 	public void dispose () {
 		gsm.dispose();
 	}
+	@Override
+	public void resize(int width, int height) {
+		// TODO Auto-generated method stub
+		gsm.resize(width, height);
+	}
 
 }
