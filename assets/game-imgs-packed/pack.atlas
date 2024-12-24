@@ -27,14 +27,14 @@ bomb
   index: -1
 buttondown
   rotate: false
-  xy: 3502, 366
+  xy: 3492, 366
   size: 150, 50
   orig: 150, 50
   offset: 0, 0
   index: -1
 buttonup
   rotate: false
-  xy: 3502, 314
+  xy: 3622, 236
   size: 150, 50
   orig: 150, 50
   offset: 0, 0
@@ -55,14 +55,14 @@ cross
   index: -1
 cursor
   rotate: false
-  xy: 2836, 254
+  xy: 3876, 230
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 green
   rotate: false
-  xy: 2992, 264
+  xy: 3876, 264
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
@@ -76,42 +76,42 @@ grnd
   index: -1
 left
   rotate: false
-  xy: 2992, 316
+  xy: 3774, 316
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
 left1
   rotate: false
-  xy: 3094, 316
+  xy: 3774, 214
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
 left2
   rotate: false
-  xy: 3196, 316
+  xy: 3492, 134
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
 pink
   rotate: false
-  xy: 2732, 236
+  xy: 3900, 178
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
   index: -1
 playdown
   rotate: false
-  xy: 2732, 288
+  xy: 3644, 288
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 playup
   rotate: false
-  xy: 2862, 288
+  xy: 3492, 236
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
@@ -125,28 +125,63 @@ red
   index: -1
 rght
   rotate: false
-  xy: 3298, 316
+  xy: 3594, 134
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
 rght1
   rotate: false
-  xy: 3400, 316
+  xy: 3696, 112
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
 rght2
   rotate: false
-  xy: 3654, 316
+  xy: 3798, 112
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
   index: -1
+statswid-blue
+  rotate: false
+  xy: 2732, 216
+  size: 150, 200
+  orig: 150, 200
+  offset: 0, 0
+  index: -1
+statswid-green
+  rotate: false
+  xy: 2884, 216
+  size: 150, 200
+  orig: 150, 200
+  offset: 0, 0
+  index: -1
+statswid-pink
+  rotate: false
+  xy: 3036, 216
+  size: 150, 200
+  orig: 150, 200
+  offset: 0, 0
+  index: -1
+statswid-red
+  rotate: false
+  xy: 3188, 216
+  size: 150, 200
+  orig: 150, 200
+  offset: 0, 0
+  index: -1
+statswid-yellow
+  rotate: false
+  xy: 3340, 216
+  size: 150, 200
+  orig: 150, 200
+  offset: 0, 0
+  index: -1
 strt
   rotate: false
-  xy: 3654, 214
+  xy: 3876, 316
   size: 100, 100
   orig: 100, 100
   offset: 0, 0
@@ -160,7 +195,7 @@ viol
   index: -1
 yellow
   rotate: false
-  xy: 2784, 236
+  xy: 3928, 264
   size: 50, 50
   orig: 50, 50
   offset: 0, 0
@@ -454,13 +489,6 @@ anim/missile
   size: 1200, 900
   orig: 1200, 900
   offset: 0, 0
-  index: 26
-anim/missile
-  rotate: false
-  xy: 2, 2708
-  size: 1200, 900
-  orig: 1200, 900
-  offset: 0, 0
   index: 27
 anim/missile
   rotate: false
@@ -468,7 +496,7 @@ anim/missile
   size: 1200, 900
   orig: 1200, 900
   offset: 0, 0
-  index: 25
+  index: 26
 anim/missile
   rotate: false
   xy: 2, 2708
@@ -476,6 +504,13 @@ anim/missile
   orig: 1200, 900
   offset: 0, 0
   index: 28
+anim/missile
+  rotate: false
+  xy: 2, 2708
+  size: 1200, 900
+  orig: 1200, 900
+  offset: 0, 0
+  index: 25
 anim/missile
   rotate: false
   xy: 2, 2708

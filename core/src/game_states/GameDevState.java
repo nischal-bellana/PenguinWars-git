@@ -40,6 +40,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -95,6 +96,7 @@ public class GameDevState extends State {
 		AtlasRegion pink;
 		AtlasRegion yellow;
 		AtlasRegion green;
+		AtlasRegion stats[];
 		AtlasRegion[] hbs ;
 		AtlasRegion cross;
 		AtlasRegion blackcross;
@@ -108,6 +110,7 @@ public class GameDevState extends State {
 		Array<Sprite> clipsp;
 		
 		//Scene2d
+		Stage stage_bottom;
 		Stage stage;
 		Table table;
 		Label turntime;
@@ -134,7 +137,7 @@ public class GameDevState extends State {
 		private int num = 2;
 		private boolean ended = false;
 		private int winner = 1;
-		private final float[] center = {600/32f,450/32f};
+		private final float[] center = {600/Constants.PPM,450/Constants.PPM};
 		Color[] plclr = {Color.RED,Color.BLUE,Color.YELLOW,Color.PINK,Color.GREEN};
 		String[] plnames = {"Red","Blue","Yellow","Pink","Green"};
 		private ShapeRenderer shapeRenderer;
@@ -145,7 +148,7 @@ public class GameDevState extends State {
 			batch = new SpriteBatch();
 			camera = new OrthographicCamera();
 			camera.setToOrtho(false, 1200, 900);
-			vp = new FitViewport(1200,1000);
+			vp = new FitViewport(1200,1200);
 			atlas = new TextureAtlas("game-imgs-packed//pack.atlas"); //Sprite sprite = atlas.createSprite("otherimagename");
 			create();
 		}
@@ -156,7 +159,7 @@ public class GameDevState extends State {
 			batch = startState.batch;
 			camera = startState.camera;
 			vp = startState.vp;
-			vp.setWorldSize(1200, 1000);
+			vp.setWorldSize(1200, 1200);
 			atlas = startState.atlas;
 			num = startState.num;
 			game_timer = 60*startState.game_time;
@@ -173,7 +176,7 @@ public class GameDevState extends State {
 			vp.setCamera(new OrthographicCamera());
 			
 			topvp = new FitViewport(1200,900,camera);
-			bottomvp = new FitViewport(1200,100);
+			bottomvp = new FitViewport(1200,300);
 			
 			resize(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 			
@@ -225,6 +228,7 @@ public class GameDevState extends State {
 			atlas.dispose();
 			shapeRenderer.dispose();
 			stage.dispose();
+			stage_bottom.dispose();
 		}
 		
 		@Override
@@ -243,6 +247,12 @@ public class GameDevState extends State {
 
 		//Inititializing methods here
 		private void texInit() {
+			stats = new AtlasRegion[5];
+			stats[0] = atlas.findRegion("statswid-red");
+			stats[1] = atlas.findRegion("statswid-blue");
+			stats[2] = atlas.findRegion("statswid-yellow");
+			stats[3] = atlas.findRegion("statswid-pink");
+			stats[4] = atlas.findRegion("statswid-green");
 			hbs = new AtlasRegion[5];
 			back = atlas.findRegion("back");
 			hbs[0] = red = atlas.findRegion("red");
@@ -282,16 +292,16 @@ public class GameDevState extends State {
 	
 		private void sprInit() {
 			grndsp = new Sprite(grndrg);
-			grndsp.setSize(1200/32f,900/32f);
-			grndsp.setCenter((600/32f)+grnd.texcen[0],(450/32f)+grnd.texcen[1]);
+			grndsp.setSize(1200/Constants.PPM,900/Constants.PPM);
+			grndsp.setCenter(center[0]+grnd.texcen[0],center[1]+grnd.texcen[1]);
 			
 			powsp = new Sprite(pow[0]);
 			powsp.setSize(2*1.024f,2*1.024f);
 			powsp.setCenter(0, 0);
 			watersp = new Sprite(viol);
-			watersp.setSize(40,5);
-			watersp.setCenter(0, -13.5f);
-			watersp.setAlpha(0.3f);
+			watersp.setSize(40,3);
+			watersp.setCenter(20, 1.5f);
+			watersp.setAlpha(0.3f); 
 			clipsp = new Array<Sprite>();
 		}
 	
@@ -304,6 +314,19 @@ public class GameDevState extends State {
 		}
 	
 		private void stageInit() {
+			stage_bottom  = new Stage();
+			stage_bottom.setViewport(bottomvp);
+			
+			Table tableb = new Table();
+			tableb.setFillParent(true);
+			stage_bottom.addActor(tableb);
+			
+			for(int i=0;i<num;i++) {
+				Image img = new Image(stats[i]);
+				tableb.add(img);
+			}
+			
+			
 			stage = new Stage();
 			Gdx.input.setInputProcessor(stage);
 			stage.setViewport(topvp);
@@ -347,7 +370,7 @@ public class GameDevState extends State {
 		private void batchRender() {
 			topvp.apply(true);
 	 		batch.begin();
-	 		batch.draw(back,0 ,0 , 1200/32f,900/32f);
+	 		batch.draw(back,0 ,0 , 1200/Constants.PPM,900/Constants.PPM);
 	 		batch.end();
 	 		drawgrnd();
 	 		batch.begin();
@@ -378,6 +401,10 @@ public class GameDevState extends State {
 	 		
 	 		stage.act(delta);
 	 		stage.draw();
+	 		
+	 		bottomvp.apply(true);
+	 		stage_bottom.act(delta);
+	 		stage_bottom.draw();
 	 	}
 	 
 		private void worldUpdate(float deltaTime) {
@@ -496,7 +523,7 @@ public class GameDevState extends State {
 					pl.setLinearVelocity(pl.getPosition().x<0?2:-2, 0);
 				}
 				
-				float waterlevel = 5;
+				float waterlevel = 3;
 				if(pl.getPosition().y<waterlevel) {
 					if(pl.health>3/60f) pl.health -= 3/60f;
 					else pl.health = 0;
@@ -541,13 +568,6 @@ public class GameDevState extends State {
 		}
 	
 		private void inputUpdate() {
-//			if(Gdx.input.justTouched()) {
-//				int x = Gdx.input.getX();
-//				int y = 900 - Gdx.input.getY();
-//				x-=600;
-//				y-=450;
-//				System.out.print((x/32f)+"f,"+(y/32f)+"f,");
-//			}
 			if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
 				player.applyForceToCenter(-2,0, true);
 				player.playersp.setRegion(lefty[0]);
@@ -699,10 +719,10 @@ public class GameDevState extends State {
 		private Abody createGrnd() {
 			BodyDef bdef = new BodyDef();
 			bdef.type = BodyType.StaticBody;
-			bdef.position.x = 600/32f;
-			bdef.position.y = 450/32f;
+			bdef.position.x = center[0];
+			bdef.position.y = center[1];
 			FixtureDef fdef = createFixdef(1,1.3f,0.3f);
-			cookie ck =  new cookie(world,"output2.xml",bdef,fdef,1/32f,1200,900);
+			cookie ck =  new cookie(world,"output2.xml",bdef,fdef,1/Constants.PPM,1200,900);
 			ck.id = "grnd";
 			return ck;
 		}
@@ -767,7 +787,7 @@ public class GameDevState extends State {
 		        float[] vert = pstovert(shp);
 		        int i = 4;
 		        while (i < vert.length) {
-		            shapeRenderer.triangle(vert[0]+(600/32f), vert[1]+(450/32f), vert[i-2]+(600/32f), vert[i-1]+(450/32f), vert[i]+(600/32f), vert[i+1]+(450/32f));
+		            shapeRenderer.triangle(vert[0]+center[0], vert[1]+center[1], vert[i-2]+center[0], vert[i-1]+center[1], vert[i]+center[0], vert[i+1]+center[1]);
 		            i += 2;
 		        }
 		    }

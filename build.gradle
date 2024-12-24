@@ -12,7 +12,6 @@ buildscript {
         classpath 'org.docstr:gwt-gradle-plugin:1.1.29'
         classpath 'org.gretty:gretty:3.1.0'
         
-
     }
 }
 allprojects {

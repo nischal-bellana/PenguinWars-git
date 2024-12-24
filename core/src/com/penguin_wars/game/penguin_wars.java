@@ -1,9 +1,5 @@
 package com.penguin_wars.game;
 
-
-
-
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 
